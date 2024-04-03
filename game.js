@@ -1,5 +1,6 @@
 class Game {
     #settings = {
+        pointsToWin: 10,
         gridSize: {
             width: 4,
             height: 5
@@ -35,6 +36,10 @@ class Game {
     }
 
     #moveGoogle() {
+        if (this.#status === "finish") {
+            this.#google = new Google(new Position({x: 0, y: 0}))
+            return
+        }
         const googlePosition = new Position(Position.getNotCrossedPosition(
                 [this.#player1.position, this.#player2.position, this.#google.position],
                 this.#settings.gridSize.width,
@@ -48,6 +53,11 @@ class Game {
     async stop() {
         clearInterval(this.#googleMovingIntervalId)
         this.#status = "stopped"
+    }
+
+    async #finishGame() {
+        clearInterval(this.#googleMovingIntervalId)
+        this.#status = "finish"
     }
 
     #createUnits() {
@@ -78,7 +88,7 @@ class Game {
     }
 
     #checkBorders(player, delta) {
-                const newPosition = player.position.clone()
+        const newPosition = player.position.clone()
         if (delta.x) newPosition.x += delta.x
         if (delta.y) newPosition.y += delta.y
 
@@ -106,6 +116,9 @@ class Game {
         if (this.#google.position.equal(newPosition)) {
             clearInterval(this.#googleMovingIntervalId)
             this.#score[player.playerNumber].points += 1
+            if (this.#score[player.playerNumber].points === this.#settings.pointsToWin) {
+                this.#finishGame()
+            }
             this.#moveGoogle()
             this.#runMovingGoogleInterval()
         }
