@@ -1,4 +1,4 @@
-class Game {
+export class Game {
     #settings = {
         pointsToWin: 10,
         gridSize: {
@@ -17,7 +17,8 @@ class Game {
     }
     #googleMovingIntervalId
 
-    constructor() {
+    constructor(eventEmitter) {
+        this.eventEmitter = eventEmitter
     }
 
     async start() {
@@ -31,6 +32,7 @@ class Game {
 
     #runMovingGoogleInterval() {
         this.#googleMovingIntervalId = setInterval(() => {
+            this.eventEmitter.emit('update')
             this.#moveGoogle()
         }, this.#settings.googleJumpInterval)
     }
@@ -38,6 +40,7 @@ class Game {
     #moveGoogle() {
         if (this.#status === "finish") {
             this.#google = new Google(new Position({x: 0, y: 0}))
+            // this.eventEmitter.emit('update')
             return
         }
         const googlePosition = new Position(Position.getNotCrossedPosition(
@@ -46,8 +49,8 @@ class Game {
                 this.#settings.gridSize.height
             )
         )
-        // clearInterval(this.#googleMovingIntervalId)
         this.#google = new Google(googlePosition)
+        this.eventEmitter.emit('update')
     }
 
     async stop() {
@@ -85,6 +88,7 @@ class Game {
             )
         )
         this.#google = new Google(googlePosition)
+        this.eventEmitter.emit('update')
     }
 
     #checkBorders(player, delta) {
@@ -135,6 +139,7 @@ class Game {
         if (delta.y) player.position.y += delta.y
 
         this.#checkGoogleCatching(player, delta)
+        this.eventEmitter.emit('update')
     }
 
     movePlayer1Right() {
@@ -261,6 +266,6 @@ class Position {
     }
 }
 
-module.exports = {
-    Game
-}
+// module.exports = {
+//     Game
+// }
